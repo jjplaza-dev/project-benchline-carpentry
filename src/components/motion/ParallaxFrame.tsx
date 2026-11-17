@@ -9,6 +9,8 @@ import { PARALLAX_QUERIES, useGsapMedia, type MotionConditions } from "@/lib/mot
 interface ParallaxFrameProps {
   /** Give the frame a height, for example `aspect-[4/3]`. */
   className?: string;
+  /** 8px corner radius (default). Set false when a parent already rounds and clips the frame. */
+  rounded?: boolean;
   /** Extra classes for the moving inner layer. */
   innerClassName?: string;
   children: ReactNode;
@@ -21,7 +23,12 @@ interface ParallaxFrameProps {
  * height, which is ±4% of the frame: 8% total, the maximum allowed. The same crop applies
  * when parallax is off (reduced motion or coarse pointer), so layout never shifts.
  */
-export function ParallaxFrame({ className, innerClassName, children }: ParallaxFrameProps) {
+export function ParallaxFrame({
+  className,
+  innerClassName,
+  rounded = true,
+  children,
+}: ParallaxFrameProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +52,7 @@ export function ParallaxFrame({ className, innerClassName, children }: ParallaxF
   useGsapMedia(PARALLAX_QUERIES, setup);
 
   return (
-    <div ref={frameRef} className={cx("relative overflow-hidden rounded-md", className)}>
+    <div ref={frameRef} className={cx("relative overflow-hidden", rounded && "rounded-md", className)}>
       <div ref={innerRef} className={cx("absolute inset-x-0 -top-[4%] h-[108%]", innerClassName)}>
         {children}
       </div>
