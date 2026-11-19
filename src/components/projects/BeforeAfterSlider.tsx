@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useId,
   useRef,
   useState,
   type KeyboardEvent,
@@ -29,7 +30,8 @@ const chipClass =
 
 /**
  * Before/after comparison using CSS `clip-path`. Drag with a pointer, or focus the handle and use
- * Arrow keys (5%), Shift+Arrow (10%), PageUp/PageDown (10%), Home (all after) and End (all before).
+ * Arrow keys (2%), Shift+Arrow (10%), PageUp/PageDown (10%), Home (all after) and End (all before).
+ * A screen-reader hint describing these keys is attached with `aria-describedby`.
  * Presentation-only: no data is read or written.
  */
 export function BeforeAfterSlider({
@@ -41,6 +43,7 @@ export function BeforeAfterSlider({
   className,
 }: BeforeAfterSliderProps) {
   const [position, setPosition] = useState(50);
+  const hintId = useId();
   const frameRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
 
@@ -51,6 +54,8 @@ export function BeforeAfterSlider({
   }, []);
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // Only the primary mouse button drags; touch and pen always count.
+    if (event.pointerType === "mouse" && event.button !== 0) return;
     dragging.current = true;
     event.currentTarget.setPointerCapture(event.pointerId);
     setFromClientX(event.clientX);
@@ -66,7 +71,7 @@ export function BeforeAfterSlider({
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const step = event.shiftKey ? 10 : 5;
+    const step = event.shiftKey ? 10 : 2;
     switch (event.key) {
       case "ArrowLeft":
       case "ArrowDown":
@@ -124,6 +129,7 @@ export function BeforeAfterSlider({
           tabIndex={0}
           aria-label="Before and after comparison"
           aria-orientation="horizontal"
+          aria-describedby={hintId}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={rounded}
@@ -135,6 +141,12 @@ export function BeforeAfterSlider({
           <ChevronsLeftRight aria-hidden="true" size={20} strokeWidth={2} />
         </div>
       </div>
+
+      <p id={hintId} className="sr-only">
+        Use the left and right arrow keys to move the divider in small steps, Shift with an arrow
+        for larger steps, Page Up and Page Down for larger jumps, Home to show only the after
+        image and End to show only the before image.
+      </p>
 
       {caption || isSample ? (
         <figcaption className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink-soft">

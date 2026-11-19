@@ -24,10 +24,13 @@ export function ProjectCard({ project, asset, parallax = false, sizes = defaultS
       {asset ? (
         parallax ? (
           <ParallaxFrame rounded={false} className="aspect-[4/3] border-b border-oak/70 bg-oak-soft">
+            <Skeleton aria-hidden="true" className="absolute inset-0" />
             <AssetImage asset={asset} sizes={sizes} />
           </ParallaxFrame>
         ) : (
           <div className="relative aspect-[4/3] border-b border-oak/70 bg-oak-soft">
+            {/* Sits behind the image: visible only until the image has loaded and painted. */}
+            <Skeleton aria-hidden="true" className="absolute inset-0" />
             <AssetImage asset={asset} sizes={sizes} />
           </div>
         )
@@ -44,7 +47,7 @@ export function ProjectCard({ project, asset, parallax = false, sizes = defaultS
   );
 }
 
-/** Static loading-state preview of a ProjectCard. Real loading arrives with Phase 3. */
+/** Skeleton version of a ProjectCard, used by the gallery's route-level loading state. */
 export function ProjectCardSkeleton() {
   return (
     <div

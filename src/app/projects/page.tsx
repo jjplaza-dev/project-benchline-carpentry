@@ -4,16 +4,24 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Section } from "@/components/layout/Section";
 import { ParallaxFrame } from "@/components/motion/ParallaxFrame";
 import { AssetImage } from "@/components/primitives/AssetImage";
-import { SampleChip } from "@/components/primitives/SampleChip";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
 import { BeforeAfterFeature } from "@/components/projects/BeforeAfterFeature";
-import { FilterChips } from "@/components/projects/FilterChips";
-import { ProjectCardSkeleton } from "@/components/projects/ProjectCard";
+import { GalleryEmptyState } from "@/components/projects/GalleryEmptyState";
+import { GalleryFilters } from "@/components/projects/GalleryFilters";
 import { ProjectGrid } from "@/components/projects/ProjectGrid";
 import { ProjectShowcase } from "@/components/projects/ProjectShowcase";
 import { PROTOTYPE_NOTICES } from "@/data/site-flags";
 import { getProjectCover } from "@/lib/project-cover";
-import { getAssetById, getFeaturedProjects, getProjects } from "@/lib/selectors";
+import {
+  filterProjects,
+  getAssetById,
+  getFeaturedProjects,
+  getProjects,
+  getProjectTowns,
+  getServices,
+  getServiceSlugs,
+} from "@/lib/selectors";
+import { hasActiveFilters, parseGalleryFilters } from "@/lib/validation/gallery-filters";
 
 export const metadata: Metadata = {
   title: "Project Gallery",
@@ -21,8 +29,23 @@ export const metadata: Metadata = {
     "Sample carpentry and repair projects around Bellingham and Whatcom County, with before and after comparisons.",
 };
 
-/** P06 Project Gallery. Filtering is a static visual until Phase 3. */
-export default function ProjectsPage() {
+interface ProjectsPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+/**
+ * P06 Project Gallery. Filters live in the URL (`?category=&service=&town=`) and are applied
+ * on the server, so they work without JavaScript, survive reloads and can be shared.
+ */
+export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
+  const towns = getProjectTowns();
+  const filters = parseGalleryFilters(await searchParams, {
+    serviceSlugs: getServiceSlugs(),
+    townIds: towns.map((town) => town.id),
+  });
+
+  const allProjects = getProjects();
+  const results = filterProjects(filters);
   const heroAsset = getAssetById("ast-gallery-hero");
   const featured = getFeaturedProjects().map((project) => ({
     project,
@@ -50,7 +73,7 @@ export default function ProjectsPage() {
             ) : null}
           </>
         }
-        ruleLabel="8 projects"
+        ruleLabel={`${allProjects.length} projects`}
         titleId="projects-title"
         aside={
           heroAsset ? (
@@ -61,14 +84,25 @@ export default function ProjectsPage() {
         }
       />
 
-      <Section aria-labelledby="gallery-title">
+      <Section aria-labelledby="gallery-title" padded={false} className="pb-24">
         <h2 id="gallery-title" className="sr-only">
           All projects
         </h2>
-        <FilterChips />
+        <GalleryFilters
+          state={filters}
+          services={getServices()}
+          towns={towns}
+          total={allProjects.length}
+          shown={results.length}
+        />
         <div className="mt-10">
-          <ProjectGrid projects={getProjects()} />
+          {results.length > 0 ? <ProjectGrid projects={results} /> : <GalleryEmptyState />}
         </div>
+        {hasActiveFilters(filters) && results.length > 0 ? (
+          <p className="mt-6 text-sm text-ink-soft">
+            Filters are in the page address, so you can bookmark or share this view.
+          </p>
+        ) : null}
       </Section>
 
       <Section tone="oak" aria-labelledby="before-after-feature-title">
@@ -93,24 +127,6 @@ export default function ProjectsPage() {
         </h2>
         <div className="mt-12">
           <ProjectShowcase label="Featured projects" items={featured} parallaxCount={2} />
-        </div>
-      </Section>
-
-      <Section tone="oak" aria-labelledby="loading-preview-title">
-        <div className="flex flex-wrap items-center gap-3">
-          <SectionLabel>Loading state</SectionLabel>
-          <SampleChip label="Preview state" alwaysShow />
-        </div>
-        <h2 id="loading-preview-title" className="mt-5">
-          While projects load.
-        </h2>
-        <p className="mt-6 text-lg">
-          A static preview of the skeleton cards shown while real gallery content loads.
-        </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <ProjectCardSkeleton />
-          <ProjectCardSkeleton />
-          <ProjectCardSkeleton />
         </div>
       </Section>
 

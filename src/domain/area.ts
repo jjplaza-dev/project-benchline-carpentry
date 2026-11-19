@@ -21,3 +21,16 @@ export interface ServiceArea {
   readonly zipNeedsConfirmation: boolean;
   readonly note: string;
 }
+
+/**
+ * Result of the service-area checker (Phase 3).
+ * - `in-area`: matches a named town.
+ * - `needs-confirmation`: matches only the "other Whatcom County communities" bucket.
+ * - `out-of-area`: a valid ZIP that no area lists.
+ * - `invalid-zip`: empty or malformed input.
+ */
+export type AreaCheckResult =
+  | { readonly kind: "in-area"; readonly areas: readonly ServiceArea[] }
+  | { readonly kind: "needs-confirmation"; readonly areas: readonly ServiceArea[] }
+  | { readonly kind: "out-of-area"; readonly zip: ZipCode }
+  | { readonly kind: "invalid-zip" };

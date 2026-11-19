@@ -6,7 +6,18 @@
 
 import type { AreaId } from "./area";
 import type { AssetId } from "./asset";
-import type { ServiceId } from "./service";
+import type { ServiceCategory, ServiceId, ServiceSlug } from "./service";
+
+/**
+ * Gallery filters, mirrored in the URL as `/projects?category=&service=&town=`.
+ * Each key is optional; an absent key means "all". Dimensions combine with AND.
+ */
+export interface GalleryFilterState {
+  readonly category?: ServiceCategory;
+  readonly service?: ServiceSlug;
+  /** An `AreaId`, for example `area-ferndale`. */
+  readonly town?: AreaId;
+}
 
 export type ProjectId = `prj-${string}`;
 export type BeforeAfterId = `ba-${string}`;

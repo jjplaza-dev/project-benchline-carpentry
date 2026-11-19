@@ -15,7 +15,7 @@ export const assets: readonly Asset[] = [
   {
     id: "ast-service-deck-porch-repairs",
     kind: "svg",
-    path: "/assets/services/deck-porch-repairs.svg",
+    path: "/service-deck-porch-repairs.jpg",
     alt: "Placeholder line drawing of a deck corner with a railing, stair and dimension lines.",
     isPlaceholder: true,
     intendedSubject: "A repaired deck with railing and stairs, wide shot in daylight.",

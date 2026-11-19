@@ -6,9 +6,9 @@ import { CtaLink } from "@/components/primitives/CtaLink";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
 import { ProjectGrid } from "@/components/projects/ProjectGrid";
 import type { ServiceCategory } from "@/domain";
-import { estimateHref } from "@/lib/links";
+import { estimateHref, galleryHref } from "@/lib/links";
 import { getProjectsByCategory, getServicesByCategory } from "@/lib/selectors";
-import { ServiceGrid } from "@/components/services/ServiceCard";
+import { ServiceGrid } from "./ServiceCard";
 
 export interface CategoryNote {
   title: string;
@@ -79,6 +79,11 @@ export function CategoryPage({
         </h2>
         <div className="mt-12">
           <ProjectGrid projects={projects} />
+        </div>
+        <div className="mt-10">
+          <CtaLink href={galleryHref({ category })} variant="secondary" arrow>
+            See these in the gallery
+          </CtaLink>
         </div>
       </Section>
 

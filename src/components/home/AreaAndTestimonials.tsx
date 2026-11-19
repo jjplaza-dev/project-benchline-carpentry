@@ -1,6 +1,7 @@
 import { Section } from "@/components/layout/Section";
 import { ImageFrame } from "@/components/primitives/ImageFrame";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
+import { ServiceAreaChecker } from "@/components/services/ServiceAreaChecker";
 import { getAssetById, getBusinessProfile, getServiceAreas, getTestimonials } from "@/lib/selectors";
 import { TestimonialList } from "./TestimonialList";
 
@@ -29,6 +30,9 @@ export function AreaAndTestimonials() {
               </li>
             ))}
           </ul>
+          <div className="mt-10">
+            <ServiceAreaChecker areas={areas} idPrefix="home-area" />
+          </div>
           {graphic ? (
             <ImageFrame
               asset={graphic}

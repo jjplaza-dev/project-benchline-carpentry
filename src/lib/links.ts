@@ -1,4 +1,17 @@
-import type { EstimateIntent, Service, ServiceSlug } from "@/domain";
+import type { EstimateIntent, GalleryFilterState, Service, ServiceSlug } from "@/domain";
+
+/**
+ * Builds `/projects?category=&service=&town=` from a filter state. Absent keys are left out,
+ * and an empty state returns plain `/projects`. The same names are read by parseGalleryFilters.
+ */
+export function galleryHref(state: GalleryFilterState = {}): string {
+  const params = new URLSearchParams();
+  if (state.category) params.set("category", state.category);
+  if (state.service) params.set("service", state.service);
+  if (state.town) params.set("town", state.town);
+  const query = params.toString();
+  return query ? `/projects?${query}` : "/projects";
+}
 
 /**
  * Builds `/request-estimate?service=<slug>&intent=estimate|availability`.
