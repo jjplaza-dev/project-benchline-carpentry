@@ -7,6 +7,19 @@ import { MobileNav } from "./MobileNav";
 import { NavLink } from "./NavLink";
 import { ScrollHeader } from "./ScrollHeader";
 
+/*
+ * Desktop nav is trimmed to four links with room to breathe. This is a stopgap that works on
+ * the labels as they are today; the cleaner fix is to edit the "primary" nav items in your
+ * fixtures (rename, drop the two service sub-pages) and delete these two constants.
+ * The mobile sheet still gets the full list.
+ */
+const DESKTOP_LABELS: Record<string, string> = {
+  "Our Services": "Services",
+  "Project Gallery": "Projects",
+  About: "About",
+  Contact: "Contact",
+};
+
 /**
  * Sticky header. Green at the top of the page, white once scrolled (see ScrollHeader and
  * the .site-header rules in globals.css). Desktop nav shows from `xl` (1280px); below that the
@@ -18,6 +31,9 @@ export function SiteHeader() {
   const primary = getNavItems("primary");
   const secondary = getNavItems("secondary");
   const cta = getNavItems("cta")[0];
+  const desktopLinks = primary
+      .filter((item) => item.label in DESKTOP_LABELS)
+      .map((item) => ({ ...item, label: DESKTOP_LABELS[item.label] }));
 
   return (
       <ScrollHeader>
@@ -46,8 +62,8 @@ export function SiteHeader() {
           </Link>
 
           <nav aria-label="Primary" className="hidden xl:block">
-            <ul className="flex items-center gap-7">
-              {primary.map((item) => (
+            <ul className="flex items-center gap-10 2xl:gap-12">
+              {desktopLinks.map((item) => (
                   <li key={item.href}>
                     <NavLink href={item.href} className="nav-link">
                       {item.label}

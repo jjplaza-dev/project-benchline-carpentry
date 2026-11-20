@@ -5,17 +5,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { GoogleReviewBadge } from "@/components/home/GoogleReviewBadge";
+import { CtaLink } from "@/components/primitives/CtaLink";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
 
 /* ─────────────────────────────────────────────────────────────
-   1. IMAGES: drop your files in /public/images/hero/ (or change
-      the paths here).
+   1. IMAGES: drop your files in /public/images/ (or change the paths here).
         background → full-bleed scene, JPG/WebP, ~2400px wide
-        worker     → transparent PNG/WebP, 1:1, full-body cutout
+        carpenters → transparent PNG/WebP, 1:1, both carpenters cut out together
    ───────────────────────────────────────────────────────────── */
 const HERO_IMAGES = {
   background: { src: "/images/bg-carpentry.jpg", alt: "" },
-  worker: { src: "/images/hero-carpenters.png", alt: "A Benchline carpenter at work" },
+  carpenters: { src: "/images/hero-carpenters.png", alt: "Two Benchline carpenters at work" },
 } as const;
 
 /* ─────────────────────────────────────────────────────────────
@@ -25,13 +25,20 @@ const HERO_IMAGES = {
 const GOOGLE_REVIEWS = { rating: 5.0, count: 27, href: undefined as string | undefined };
 
 /* ─────────────────────────────────────────────────────────────
-   2. PARALLAX: how fast each layer moves UP on screen, as a fraction
-      of scroll speed. 0 = pinned, 1 = moves with the page, >1 = faster.
-      SMOOTHING is how many seconds the layers take to catch up with
-      the scrollbar. 0 = locked to it, ~1 = soft and floaty.
+   2. PARALLAX: how fast each layer moves UP on screen, as a fraction of scroll speed.
+      0 = pinned, 1 = moves with the page. Both layers stay close to 1 so the carpenters
+      feel planted on the site; the gap between them (0.13) is the depth you see.
+      SMOOTHING is how many seconds the layers take to catch up with the scrollbar.
    ───────────────────────────────────────────────────────────── */
-const SPEED = { title: 0.35, worker: 1.1 } as const;
-const SMOOTHING = 0.9;
+const SPEED = { title: 0.82, carpenters: 0.95 } as const;
+const SMOOTHING = 0.6;
+
+/* ─────────────────────────────────────────────────────────────
+   3. GROUNDING: the contact shadow under the carpenters' boots.
+      `feet` = distance from the bottom of the 1:1 image up to the boot line. Nudge it
+      once your PNG is in until the shadow sits right under the boots.
+   ───────────────────────────────────────────────────────────── */
+const GROUND = { feet: "5%", width: "64%", height: "7%" } as const;
 
 /* Height of the sticky header, so the hero fills the rest of the first screen. */
 const HEADER_H = "4.5rem";
@@ -49,14 +56,28 @@ const FADE_UP = [
 /* Vignette: clear around the lower middle, darkening toward the edges. */
 const VIGNETTE =
     "radial-gradient(ellipse 72% 62% at 50% 86%, transparent 42%, color-mix(in srgb, var(--color-ink) 70%, transparent) 100%)";
+
+/* Scrims: soft dark pools behind the text so it stays crisp over the scaffolding. */
+const SUBHEAD_SCRIM =
+    "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-ink) 66%, transparent) 0%, color-mix(in srgb, var(--color-ink) 40%, transparent) 55%, transparent 100%)";
 const COPY_SCRIM =
-    "radial-gradient(ellipse 90% 85% at 25% 75%, color-mix(in srgb, var(--color-ink) 78%, var(--hero-green) 22%) 0%, color-mix(in srgb, var(--color-ink) 45%, transparent) 58%, transparent 100%)";
+    "radial-gradient(ellipse 90% 90% at 22% 78%, color-mix(in srgb, var(--color-ink) 84%, var(--hero-green) 16%) 0%, color-mix(in srgb, var(--color-ink) 58%, transparent) 55%, transparent 100%)";
+
+/* Contact shadow under the boots; multiplies into the scene like a real shadow. */
+const GROUND_SHADOW =
+    "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-ink) 78%, transparent) 0%, color-mix(in srgb, var(--color-ink) 40%, transparent) 45%, transparent 72%)";
+
+/* Soft edge on the cutout: a tight, low shadow separates it from the scene without a halo,
+   and a slight desaturate/dim pulls it toward the scene's lighting. */
+const CUTOUT_FILTER =
+    "drop-shadow(0 6px 10px color-mix(in srgb, var(--color-ink) 38%, transparent)) saturate(0.95) brightness(0.97)";
+
 /**
  * Layered parallax hero. Back to front:
  *   z-0   background, fixed to the viewport and clipped by the hero, so it stays still
  *   z-10  business name, drifts up slowly
- *   z-20  worker cutout, drifts up faster
- *   z-30  copy and Google review badge, static
+ *   z-20  carpenters cutout plus ground shadow, drift up a touch faster
+ *   z-30  copy, Google review badge and estimate CTA, static
  *
  * GSAP ScrollTrigger drives the two moving layers with `scrub: SMOOTHING`, so they ease toward
  * the scroll position instead of jumping with every wheel tick. With reduced motion nothing
@@ -65,13 +86,13 @@ const COPY_SCRIM =
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
-  const workerRef = useRef<HTMLDivElement>(null);
+  const carpentersRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     const title = titleRef.current;
-    const worker = workerRef.current;
-    if (!section || !title || !worker) return;
+    const carpenters = carpentersRef.current;
+    if (!section || !title || !carpenters) return;
 
     gsap.registerPlugin(ScrollTrigger);
     const mm = gsap.matchMedia();
@@ -93,7 +114,7 @@ export function Hero() {
           });
 
       drift(title, SPEED.title);
-      drift(worker, SPEED.worker);
+      drift(carpenters, SPEED.carpenters);
     });
 
     return () => mm.revert();
@@ -135,38 +156,58 @@ export function Hero() {
           <span className="block text-[clamp(4.25rem,19.5vw,21rem)] leading-[0.82] tracking-[0.01em]">
             Benchline
           </span>
-            <span className="mt-3 block absolute right-[10%] xxl:right-[20%] font-sans text-[clamp(0.875rem,1.8vw,1.75rem)] font-semibold tracking-[0.28em] text-ivory normal-case md:mt-5">
+            <span className="absolute right-[10%] mt-3 block font-sans text-[clamp(0.875rem,1.8vw,1.75rem)] font-semibold tracking-[0.28em] text-ivory normal-case [text-shadow:0_1px_12px_rgb(0_0_0/0.5)] xxl:right-[20%] md:mt-5">
+            {/* Scrim: keeps the subheading crisp over the scaffolding. Sits behind the text. */}
+              <span
+                  aria-hidden="true"
+                  className="absolute -inset-x-8 -inset-y-4 -z-10 blur-md"
+                  style={{ backgroundImage: SUBHEAD_SCRIM }}
+              />
             Carpentry &amp; Home Repair
           </span>
           </h1>
         </div>
 
-        {/* z-20 · Worker cutout (1:1). Square, bottom-centered, never wider than 140vw so it
-          can't blow out small screens; the cutout sits mid-square, so edge overflow is clipped. */}
+        {/* z-20 · Carpenters cutout (1:1). Square, bottom-centered, never wider than 140vw so it
+          can't blow out small screens; the cutout sits mid-square, so edge overflow is clipped.
+          The ground shadow lives in the same layer and transform, so it never drifts off the boots. */}
         <div
-            ref={workerRef}
+            ref={carpentersRef}
             className="pointer-events-none absolute inset-0 z-20 will-change-transform"
         >
-          <div className="absolute bottom-[0] left-1/2 aspect-square h-[min(calc(100%_-_10.5rem),140vw)] -translate-x-1/2">
-            <Image
-                src={HERO_IMAGES.worker.src}
-                alt={HERO_IMAGES.worker.alt}
-                fill
-                priority
-                sizes="(min-width: 768px) 900px, 140vw"
-                className="object-cover translate-y-10 md:translate-y-20 scale-110"
-            />
+          <div className="absolute bottom-0 left-1/2 aspect-square h-[min(calc(100%_-_10.5rem),140vw)] -translate-x-1/2">
+            <div className="absolute inset-0 translate-y-10 scale-110 md:translate-y-20">
+              <div
+                  aria-hidden="true"
+                  className="absolute left-1/2 -translate-x-1/2 mix-blend-multiply blur-[6px]"
+                  style={{
+                    bottom: GROUND.feet,
+                    width: GROUND.width,
+                    height: GROUND.height,
+                    backgroundImage: GROUND_SHADOW,
+                  }}
+              />
+              <Image
+                  src={HERO_IMAGES.carpenters.src}
+                  alt={HERO_IMAGES.carpenters.alt}
+                  fill
+                  priority
+                  sizes="(min-width: 768px) 900px, 140vw"
+                  className="object-cover"
+                  style={{ filter: CUTOUT_FILTER }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* z-30 · Copy and review badge. Static so they stay readable above the worker.
+        {/* z-30 · Copy, review badge and CTA. Static so they stay readable above the carpenters.
           pb-24 on phones keeps them clear of the fixed Call / Email / Estimate bar. */}
         <div className="site-container pointer-events-none relative z-30 flex h-full flex-col justify-end pb-24 md:pb-14">
           <div className="pointer-events-auto relative max-w-md">
-            {/* Feathered radial scrim behind the copy block */}
+            {/* Feathered scrim behind the whole block */}
             <div
                 aria-hidden="true"
-                className="pointer-events-none absolute -inset-x-8 -inset-y-6 -z-10 blur-md"
+                className="pointer-events-none absolute -inset-x-12 -inset-y-12 -z-10 blur-md"
                 style={{ backgroundImage: COPY_SCRIM }}
             />
             <div className="[text-shadow:0_1px_16px_rgb(0_0_0/0.45)]">
@@ -181,6 +222,12 @@ export function Hero() {
                   count={GOOGLE_REVIEWS.count}
                   href={GOOGLE_REVIEWS.href}
               />
+            </div>
+            {/* Phones already have the Estimate button in the fixed action bar, so this is md+. */}
+            <div className="mt-6 hidden md:block">
+              <CtaLink href="/request-estimate" large arrow>
+                Request an Estimate
+              </CtaLink>
             </div>
           </div>
         </div>
