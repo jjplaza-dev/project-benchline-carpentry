@@ -43,25 +43,31 @@ const GROUND = { feet: "5%", width: "64%", height: "7%" } as const;
 /* Height of the sticky header, so the hero fills the rest of the first screen. */
 const HEADER_H = "4.5rem";
 
-/* Image fades into the brand green going upward. Solid green at the top matches the header. */
+/* Brand green. Reads --hero-green from globals.css if it exists, otherwise falls back to the
+   moss-deep token, so the hero never loses its green if the variable is missing. */
+const GREEN = "var(--hero-green, var(--color-moss-deep))";
+/* A deeper green (green + a little ink) for the vignette edges. */
+const GREEN_DEEP = `color-mix(in srgb, ${GREEN} 72%, var(--color-ink))`;
+
+/* Image fades into the brand green going upward. Solid green through the header zone, then a long
+   eased fade, so the photo emerges from the same green as the navbar. */
 const FADE_UP = [
-  "var(--hero-green) 0%",
-  "var(--hero-green) 10%",
-  "color-mix(in srgb, var(--hero-green) 82%, transparent) 22%",
-  "color-mix(in srgb, var(--hero-green) 50%, transparent) 36%",
-  "color-mix(in srgb, var(--hero-green) 20%, transparent) 50%",
-  "transparent 66%",
+  `${GREEN} 0%`,
+  `${GREEN} 14%`,
+  `color-mix(in srgb, ${GREEN} 90%, transparent) 26%`,
+  `color-mix(in srgb, ${GREEN} 68%, transparent) 38%`,
+  `color-mix(in srgb, ${GREEN} 40%, transparent) 50%`,
+  `color-mix(in srgb, ${GREEN} 18%, transparent) 62%`,
+  "transparent 76%",
 ].join(", ");
 
-/* Vignette: clear around the lower middle, darkening toward the edges. */
-const VIGNETTE =
-    "radial-gradient(ellipse 72% 62% at 50% 86%, transparent 42%, color-mix(in srgb, var(--color-ink) 70%, transparent) 100%)";
+/* Green vignette: clear around the lower middle, closing in with deep green toward the edges. */
+const VIGNETTE = `radial-gradient(ellipse 78% 66% at 50% 90%, transparent 40%, color-mix(in srgb, ${GREEN_DEEP} 55%, transparent) 72%, color-mix(in srgb, ${GREEN_DEEP} 92%, transparent) 100%)`;
 
 /* Scrims: soft dark pools behind the text so it stays crisp over the scaffolding. */
 const SUBHEAD_SCRIM =
     "radial-gradient(ellipse at center, color-mix(in srgb, var(--color-ink) 66%, transparent) 0%, color-mix(in srgb, var(--color-ink) 40%, transparent) 55%, transparent 100%)";
-const COPY_SCRIM =
-    "radial-gradient(ellipse 90% 90% at 22% 78%, color-mix(in srgb, var(--color-ink) 84%, var(--hero-green) 16%) 0%, color-mix(in srgb, var(--color-ink) 58%, transparent) 55%, transparent 100%)";
+const COPY_SCRIM = `radial-gradient(ellipse 90% 90% at 22% 78%, color-mix(in srgb, var(--color-ink) 84%, ${GREEN} 16%) 0%, color-mix(in srgb, var(--color-ink) 58%, transparent) 55%, transparent 100%)`;
 
 /* Contact shadow under the boots; multiplies into the scene like a real shadow. */
 const GROUND_SHADOW =
@@ -125,7 +131,7 @@ export function Hero() {
           ref={sectionRef}
           data-surface="dark"
           aria-labelledby="home-title"
-          className="relative isolate overflow-hidden bg-[var(--hero-green)] text-ivory"
+          className="relative isolate overflow-hidden bg-[var(--hero-green,var(--color-moss-deep))] text-ivory"
           style={{ height: `max(36rem, calc(100svh - ${HEADER_H}))`, maxHeight: "60rem" }}
       >
         {/* z-0 · Background. position:fixed inside a clip-path parent stays put while the hero scrolls. */}

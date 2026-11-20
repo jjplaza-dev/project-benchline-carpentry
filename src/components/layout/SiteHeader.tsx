@@ -20,6 +20,10 @@ const DESKTOP_LABELS: Record<string, string> = {
   Contact: "Contact",
 };
 
+/* Nav link colors follow the header state: ivory on the green bar, ink on white. */
+const NAV_LINK =
+    "nav-link text-ivory transition-colors duration-300 after:bg-ivory group-data-[scrolled=true]/header:text-ink group-data-[scrolled=true]/header:after:bg-cedar-deep";
+
 /**
  * Sticky header. Green at the top of the page, white once scrolled (see ScrollHeader and
  * the .site-header rules in globals.css). Desktop nav shows from `xl` (1280px); below that the
@@ -65,7 +69,7 @@ export function SiteHeader() {
             <ul className="flex items-center gap-10 2xl:gap-12">
               {desktopLinks.map((item) => (
                   <li key={item.href}>
-                    <NavLink href={item.href} className="nav-link">
+                    <NavLink href={item.href} className={NAV_LINK}>
                       {item.label}
                     </NavLink>
                   </li>

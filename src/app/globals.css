@@ -428,7 +428,14 @@
     position: sticky;
     top: 0;
     z-index: 40;
-    border-bottom: 1px solid var(--color-oak);
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    transition:
+            background-color 0.25s ease,
+            border-color 0.25s ease;
+  }
+  .site-header[data-scrolled="true"] {
+    border-bottom-color: var(--color-oak);
     background: color-mix(in srgb, var(--color-ivory) 92%, transparent);
     backdrop-filter: blur(10px);
   }
