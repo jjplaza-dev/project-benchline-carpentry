@@ -3,11 +3,9 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { CtaLink } from "@/components/primitives/CtaLink";
+import { GoogleReviewBadge } from "@/components/home/GoogleReviewBadge";
 import { SectionLabel } from "@/components/primitives/SectionLabel";
-import { estimateHref } from "@/lib/links";
 
 /* ─────────────────────────────────────────────────────────────
    1. IMAGES: drop your files in /public/images/hero/ (or change
@@ -16,9 +14,15 @@ import { estimateHref } from "@/lib/links";
         worker     → transparent PNG/WebP, 1:1, full-body cutout
    ───────────────────────────────────────────────────────────── */
 const HERO_IMAGES = {
-  background: { src: "/images/hero-carpenter.png", alt: "" },
-  worker: { src: "/images/hero-carpenter.png", alt: "A Benchline carpenter at work" },
+  background: { src: "/images/bg-carpentry.jpg", alt: "" },
+  worker: { src: "/images/hero-carpenters.png", alt: "A Benchline carpenter at work" },
 } as const;
+
+/* ─────────────────────────────────────────────────────────────
+   TEMPORARY: placeholder Google review numbers. Replace with the real rating and review
+   count from the Google Business Profile before launch, and set `href` to its reviews link.
+   ───────────────────────────────────────────────────────────── */
+const GOOGLE_REVIEWS = { rating: 5.0, count: 27, href: undefined as string | undefined };
 
 /* ─────────────────────────────────────────────────────────────
    2. PARALLAX: how fast each layer moves UP on screen, as a fraction
@@ -45,13 +49,14 @@ const FADE_UP = [
 /* Vignette: clear around the lower middle, darkening toward the edges. */
 const VIGNETTE =
     "radial-gradient(ellipse 72% 62% at 50% 86%, transparent 42%, color-mix(in srgb, var(--color-ink) 70%, transparent) 100%)";
-
+const COPY_SCRIM =
+    "radial-gradient(ellipse 90% 85% at 25% 75%, color-mix(in srgb, var(--color-ink) 78%, var(--hero-green) 22%) 0%, color-mix(in srgb, var(--color-ink) 45%, transparent) 58%, transparent 100%)";
 /**
  * Layered parallax hero. Back to front:
  *   z-0   background, fixed to the viewport and clipped by the hero, so it stays still
  *   z-10  business name, drifts up slowly
  *   z-20  worker cutout, drifts up faster
- *   z-30  copy and CTAs, static
+ *   z-30  copy and Google review badge, static
  *
  * GSAP ScrollTrigger drives the two moving layers with `scrub: SMOOTHING`, so they ease toward
  * the scroll position instead of jumping with every wheel tick. With reduced motion nothing
@@ -130,7 +135,7 @@ export function Hero() {
           <span className="block text-[clamp(4.25rem,19.5vw,21rem)] leading-[0.82] tracking-[0.01em]">
             Benchline
           </span>
-            <span className="mt-3 block font-sans text-[clamp(0.875rem,1.8vw,1.75rem)] font-semibold tracking-[0.28em] text-ivory normal-case md:mt-5">
+            <span className="mt-3 block absolute right-[10%] xxl:right-[20%] font-sans text-[clamp(0.875rem,1.8vw,1.75rem)] font-semibold tracking-[0.28em] text-ivory normal-case md:mt-5">
             Carpentry &amp; Home Repair
           </span>
           </h1>
@@ -142,37 +147,40 @@ export function Hero() {
             ref={workerRef}
             className="pointer-events-none absolute inset-0 z-20 will-change-transform"
         >
-          <div className="absolute bottom-[12.5rem] left-1/2 aspect-square h-[min(calc(100%_-_12.5rem),140vw)] -translate-x-1/2 md:bottom-0 md:h-[min(92%,140vw)]">
+          <div className="absolute bottom-[0] left-1/2 aspect-square h-[min(calc(100%_-_10.5rem),140vw)] -translate-x-1/2">
             <Image
                 src={HERO_IMAGES.worker.src}
                 alt={HERO_IMAGES.worker.alt}
                 fill
                 priority
                 sizes="(min-width: 768px) 900px, 140vw"
-                className="object-contain object-bottom"
+                className="object-cover translate-y-10 md:translate-y-20 scale-110"
             />
           </div>
         </div>
 
-        {/* z-30 · Copy and CTAs. Static so they stay readable and clickable above the worker.
+        {/* z-30 · Copy and review badge. Static so they stay readable above the worker.
           pb-24 on phones keeps them clear of the fixed Call / Email / Estimate bar. */}
         <div className="site-container pointer-events-none relative z-30 flex h-full flex-col justify-end pb-24 md:pb-14">
-          <div className="pointer-events-auto max-w-md [text-shadow:0_1px_16px_rgb(0_0_0/0.45)]">
-            <SectionLabel>Bellingham, Washington</SectionLabel>
-            <p className="mt-4 hidden text-lg md:block md:text-xl">
-              Practical carpentry and home repairs for Bellingham and the surrounding Whatcom County
-              communities.
-            </p>
-            <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-3 md:mt-6">
-              <CtaLink href={estimateHref()} large arrow>
-                Request an Estimate
-              </CtaLink>
-              <Link
-                  href="/projects"
-                  className="inline-flex min-h-11 items-center font-semibold text-ivory underline underline-offset-4 hover:text-oak"
-              >
-                See recent projects
-              </Link>
+          <div className="pointer-events-auto relative max-w-md">
+            {/* Feathered radial scrim behind the copy block */}
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-x-8 -inset-y-6 -z-10 blur-md"
+                style={{ backgroundImage: COPY_SCRIM }}
+            />
+            <div className="[text-shadow:0_1px_16px_rgb(0_0_0/0.45)]">
+              <SectionLabel>Bellingham, Washington</SectionLabel>
+              <p className="mt-4 hidden text-lg md:block md:text-xl">
+                Practical carpentry and home repairs for Bellingham and the surrounding Whatcom County
+                communities.
+              </p>
+              <GoogleReviewBadge
+                  className="mt-5 md:mt-6"
+                  rating={GOOGLE_REVIEWS.rating}
+                  count={GOOGLE_REVIEWS.count}
+                  href={GOOGLE_REVIEWS.href}
+              />
             </div>
           </div>
         </div>
